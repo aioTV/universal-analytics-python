@@ -13,26 +13,34 @@
 
 # Standard library imports
 from __future__ import division, print_function, with_statement
-# import os
 import re
 import sys
 
 # Third party libraries
-from six.moves import cStringIO as StringIO
+from six.moves import cStringIO as StringIO  # Used by tests
+import six
 
 
 class BufferTranslator(object):
-    """ Provides a buffer-compatible interface for filtering buffer content.
+    """
+    Provides a buffer-compatible interface for filtering buffer content.
     """
     parsers = []
 
     @staticmethod
     def stripslashes(content):
-        return content.decode('string_escape')
+        if six.PY3:
+            content = content.encode('UTF-8')
+            return content.decode('unicode_escape')
+        else:
+            return content.decode('string_escape')
 
     @staticmethod
     def addslashes(content):
-        return content.encode('string_escape')
+        if six.PY3:
+            return content.encode('unicode_escape')
+        else:
+            return content.encode('string_escape')
 
     def __init__(self, output):
         self.output = output
@@ -49,6 +57,9 @@ class BufferTranslator(object):
                 return method(match)
         return line
 
+    def flush(self):
+        pass
+
 
 class LineBufferTranslator(BufferTranslator):
     """
@@ -56,12 +67,13 @@ class LineBufferTranslator(BufferTranslator):
     even when input is not already line-buffered. Caches input until newlines
     occur, and then dispatches translated input to output buffer.
     """
-    def __init__(self, *a, **kw):
+    def __init__(self, *args, **kwargs):
         self._linepending = []
-        super(LineBufferTranslator, self).__init__(*a, **kw)
+        super(LineBufferTranslator, self).__init__(*args, **kwargs)
 
     def write(self, _input):
         lines = _input.splitlines(True)
+        last = 0
         for i in range(0, len(lines)):
             last = i
             if lines[i].endswith('\n'):
@@ -71,7 +83,7 @@ class LineBufferTranslator(BufferTranslator):
                 del self._linepending[0:]
                 last = -1
 
-        if last >= 0:
+        if lines and last >= 0:
             self._linepending.append(lines[last])
 
     def __del__(self):
@@ -95,7 +107,6 @@ class HTTPTranslator(LineBufferTranslator):
         return cls.RE_PARAMETER_SPACER.sub(r' &\1= ', line)
 
     def translate(self, line):
-
         parsed = self.RE_LINE_PARSER.match(line)
 
         if parsed:
@@ -106,7 +117,7 @@ class HTTPTranslator(LineBufferTranslator):
                 return '\n# HTTP Request:\n' + self.stripslashes(value)
             elif stage == 'reply':
                 return '\n\n# HTTP Response:\n' + self.stripslashes(value)
-            elif stage == 'header':
+            elif stage == 'header5':
                 return value + '\n'
             else:
                 return value
@@ -114,7 +125,10 @@ class HTTPTranslator(LineBufferTranslator):
         return line
 
 
-def consume(outbuffer=None):  # Capture standard output
+def consume(outbuffer=None):
+    """
+    Capture standard output.
+    """
     sys.stdout = HTTPTranslator(outbuffer or sys.stdout)
     return sys.stdout
 

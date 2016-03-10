@@ -19,6 +19,7 @@ import time
 import uuid
 
 # Third party libraries
+from six.moves import http_client
 from six.moves.urllib.error import HTTPError, URLError
 from six.moves.urllib.parse import urlencode
 from six.moves.urllib.request import build_opener, install_opener, urlopen
@@ -102,9 +103,12 @@ class HTTPRequest(object):
         """
         Activate debugging on urllib2.
         """
-        handler = HTTPSHandler(debuglevel=1)
-        opener = build_opener(handler)
-        install_opener(opener)
+        if six.PY2:
+            handler = HTTPSHandler(debuglevel=1)
+            opener = build_opener(handler)
+            install_opener(opener)
+        else:
+            http_client.HTTPConnection.debuglevel = 1
 
     @classmethod
     def fixUTF8(cls, data):  # Ensure proper encoding for UA's servers...

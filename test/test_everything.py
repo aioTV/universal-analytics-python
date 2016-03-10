@@ -41,7 +41,7 @@ class UAMPythonTestCase(unittest.TestCase):
 
     @classmethod
     def url_quote(cls, value, safe_chars=''):
-        return urllib.quote(value, safe_chars)
+        return urllib.parse.quote(value, safe_chars)
 
     @property
     def buffer(self):
@@ -66,7 +66,6 @@ class UAMPythonTestCase(unittest.TestCase):
     def testSendPageview(self):
         # Send a pageview
         self.tracker.send('pageview', '/test')
-        print(self.buffer)
         self.assertIn('t=pageview', self.buffer)
         self.assertIn('dp={0}'.format(self.url_quote('/test')), self.buffer)
         self.reset()
