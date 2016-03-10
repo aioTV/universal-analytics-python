@@ -117,7 +117,7 @@ class HTTPTranslator(LineBufferTranslator):
                 return '\n# HTTP Request:\n' + self.stripslashes(value)
             elif stage == 'reply':
                 return '\n\n# HTTP Response:\n' + self.stripslashes(value)
-            elif stage == 'header5':
+            elif stage == 'header':
                 return value + '\n'
             else:
                 return value
