@@ -1,8 +1,9 @@
 from setuptools import setup
 import sys
 
-VERSION=open('commit-version').read().strip()
-print >>sys.stderr, "Preparing version {0}\n".format(VERSION or "NOTFOUND")
+VERSION='1.0.0'
+#VERSION=open('commit-version').read().strip()
+#print >>sys.stderr, "Preparing version {0}\n".format(VERSION or "NOTFOUND")
 
 
 try:
