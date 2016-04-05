@@ -9,7 +9,7 @@ except ImportError:
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-VERSION = '1.0.0'
+VERSION = '0.2.4+aiotv.1'
 # VERSION=open('commit-version').read().strip()
 # print >>sys.stderr, "Preparing version {0}\n".format(VERSION or "NOTFOUND")
 
